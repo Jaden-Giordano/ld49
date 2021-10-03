@@ -2,7 +2,7 @@
   <div class="w-screen h-screen relative">
     <widget title="Power Source" :outputs="2" @output-connect="handleOutputConnect">
       <canvas ref="canvas"></canvas>
-      <span>current value: {{wave}}</span>
+      <span>current value: {{(wave || 0).toFixed(3)}}</span>
     </widget>
     <widget title="Output" :inputs="1" @input-connect="handleInputConnect">
       <span>current value: 0</span>
@@ -23,14 +23,15 @@ export default defineComponent({
   },
   setup() {
     const canvas = ref<HTMLCanvasElement>();
-    const wave$ = bind(interval(500).pipe(
-      map((index) => index % 2 == 1 ? -1 : 1),
+    const wave$ = bind(interval(25).pipe(
+      //map((index) => index % 2 == 1 ? -1 : 1),
+      map((index) => Math.sin(index / 5)),
     ));
     const wave = observableRef<number>(wave$);
 
     const subscriber = ref<Subscription>();
 
-    const scopeSize = 20;
+    const scopeSize = 30;
 
     const handleOutputConnect = (index: number) => {
     };
@@ -40,29 +41,32 @@ export default defineComponent({
 
     onMounted(() => {
       let context = canvas.value?.getContext('2d');
-      let samples: number[] = new Array(10).fill(0);
+      let samples: number[] = new Array(scopeSize).fill(0);
       subscriber.value = wave$.subscribe((value) => {
         let width = canvas.value?.width || 0;
         let height = canvas.value?.height || 0 ;
 
-        samples = [value, value, ...samples.slice(0, scopeSize - 2)]
+        samples = [...samples.slice(1, scopeSize), value];
+
+
 
         if (context) {
           context.fillStyle = colors.gray[800];
           context.fillRect(0, 0, width as number, height as number);
           context.strokeStyle = colors.white as string;
-          context.lineWidth = 2;
+          context.lineWidth = 3;
 
           context.beginPath();
 
           samples.forEach((sample, index) => {
             let x = (width as number / scopeSize) * index;
-            let y = ((sample + 1) / 2) * height as number;
+            let y = (((sample * -1) + 1) / 2) * height as number * 0.9 + 3;
             if (index == 0) {
               context?.moveTo(x, y);
               return;
             }
             context?.lineTo(x, y);
+
           });
               context?.stroke();
         }
