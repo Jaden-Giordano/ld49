@@ -1,7 +1,10 @@
 <template>
   <div class="w-screen h-screen relative">
-    <widget title="A cool widget">
+    <widget title="Power Source" :outputs="2" @output-connect="handleOutputConnect">
       <span>current value: {{wave}}</span>
+    </widget>
+    <widget title="Output" :inputs="1" @input-connect="handleInputConnect">
+      <span>current value: 0</span>
     </widget>
   </div>
 </template>
@@ -22,7 +25,17 @@ export default defineComponent({
     ));
     const wave = observableRef<number>(wave$);
 
-    return { wave };
+    const handleOutputConnect = (index: number) => {
+    };
+
+    const handleInputConnect = (index: number) => {
+    };
+
+    return {
+      wave,
+      handleOutputConnect,
+      handleInputConnect,
+    };
   },
 });
 </script>
@@ -30,7 +43,5 @@ export default defineComponent({
 <style>
 #app {
   font-family: Vector, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 </style>

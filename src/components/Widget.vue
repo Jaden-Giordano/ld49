@@ -9,11 +9,39 @@
     >
       <span>{{title}}</span>
     </div>
-    <div class="w-full flex flex-col p-2">
-      <slot />
+    <div class="w-full flex-grow flex">
+      <div v-if="inputs" class="connectors">
+        <div
+          v-for="index in inputs"
+          :key="index" class="connector"
+          @click="$emit('input-connect', index)"
+        />
+      </div>
+      <div class="flex-grow flex flex-col p-2">
+        <slot />
+      </div>
+      <div v-if="outputs" class="connectors">
+        <div
+          v-for="index in outputs"
+          :key="index" class="connector"
+          @click="$emit('output-connect', index)"
+        />
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+  .connectors {
+    @apply w-8;
+    @apply flex flex-col justify-center items-center space-y-6;
+    @apply bg-gray-700;
+  }
+
+  .connector {
+    @apply w-4 h-4 box-border border-2 border-gray;
+  }
+</style>
 
 <script lang="ts">
 import { computed, defineComponent, ref } from "vue";
@@ -25,6 +53,8 @@ type Position = {
 
 type Props = {
   title: string;
+  inputs?: number;
+  outputs?: number;
 };
 
 export default defineComponent<Props>({
@@ -33,6 +63,8 @@ export default defineComponent<Props>({
       type: String,
       default: () => 'Widget',
     },
+    inputs: Number,
+    outputs: Number,
   },
   setup() {
     const dragging = ref(false);
