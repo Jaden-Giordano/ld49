@@ -1,11 +1,13 @@
-import { DeepReadonly, onBeforeUnmount, readonly, ref } from "vue";
+import { DeepReadonly, onBeforeUnmount, readonly, ref } from 'vue';
 import { Observable, shareReplay } from 'rxjs';
 
 type ReadonlyRef<T = unknown> = {
   readonly value?: DeepReadonly<T>;
 };
 
-export function observableRef<T = unknown>(source$: Observable<T>): ReadonlyRef {
+export function observableRef<T = unknown>(
+  source$: Observable<T>
+): ReadonlyRef {
   const reference = ref<T>();
   const sub = source$.subscribe((value) => {
     reference.value = value;
