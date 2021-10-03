@@ -1,6 +1,7 @@
 <template>
   <div class="w-screen h-screen relative">
     <widget title="Power Source" :outputs="2" @output-connect="handleOutputConnect">
+      <canvas ref="canvas"></canvas>
       <span>current value: {{wave}}</span>
     </widget>
     <widget title="Output" :inputs="1" @input-connect="handleInputConnect">
@@ -10,20 +11,26 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import colors from 'windicss/colors';
 import { observableRef, bind } from './context';
 import Widget from './components/Widget.vue';
-import { interval, map } from 'rxjs';
+import { interval, map, Subscription } from 'rxjs';
 
 export default defineComponent({
   components: {
     Widget,
   },
   setup() {
+    const canvas = ref<HTMLCanvasElement>();
     const wave$ = bind(interval(500).pipe(
       map((index) => index % 2 == 1 ? -1 : 1),
     ));
     const wave = observableRef<number>(wave$);
+
+    const subscriber = ref<Subscription>();
+
+    const scopeSize = 20;
 
     const handleOutputConnect = (index: number) => {
     };
@@ -31,10 +38,48 @@ export default defineComponent({
     const handleInputConnect = (index: number) => {
     };
 
+    onMounted(() => {
+      let context = canvas.value?.getContext('2d');
+      let samples: number[] = new Array(10).fill(0);
+      subscriber.value = wave$.subscribe((value) => {
+        let width = canvas.value?.width || 0;
+        let height = canvas.value?.height || 0 ;
+
+        samples = [value, value, ...samples.slice(0, scopeSize - 2)]
+
+        if (context) {
+          context.fillStyle = colors.gray[800];
+          context.fillRect(0, 0, width as number, height as number);
+          context.strokeStyle = colors.white as string;
+          context.lineWidth = 2;
+
+          context.beginPath();
+
+          samples.forEach((sample, index) => {
+            let x = (width as number / scopeSize) * index;
+            let y = ((sample + 1) / 2) * height as number;
+            if (index == 0) {
+              context?.moveTo(x, y);
+              return;
+            }
+            context?.lineTo(x, y);
+          });
+              context?.stroke();
+        }
+      });
+    });
+
+    onUnmounted(() => {
+      if (subscriber.value) {
+        subscriber.value.unsubscribe();
+      }
+    })
+
     return {
       wave,
       handleOutputConnect,
       handleInputConnect,
+      canvas,
     };
   },
 });
