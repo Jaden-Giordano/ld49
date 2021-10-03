@@ -41,7 +41,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vue/compiler-sfc", "npm:3.2.11"],
             ["eslint", "npm:7.32.0"],
             ["prettier", "npm:2.4.0"],
-            ["rxjs", "npm:7.3.0"],
+            ["rxjs", "npm:7.3.1"],
             ["typescript", "patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=32657b"],
             ["typescript-language-server", "npm:0.6.2"],
             ["upath", "npm:2.0.1"],
@@ -3110,7 +3110,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vue/compiler-sfc", "npm:3.2.11"],
             ["eslint", "npm:7.32.0"],
             ["prettier", "npm:2.4.0"],
-            ["rxjs", "npm:7.3.0"],
+            ["rxjs", "npm:7.3.1"],
             ["typescript", "patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=32657b"],
             ["typescript-language-server", "npm:0.6.2"],
             ["upath", "npm:2.0.1"],
@@ -3670,10 +3670,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["rxjs", [
-        ["npm:7.3.0", {
-          "packageLocation": "./.yarn/cache/rxjs-npm-7.3.0-8a14d1c3d9-e63adb8808.zip/node_modules/rxjs/",
+        ["npm:7.3.1", {
+          "packageLocation": "./.yarn/cache/rxjs-npm-7.3.1-e61d729185-a97ab220f3.zip/node_modules/rxjs/",
           "packageDependencies": [
-            ["rxjs", "npm:7.3.0"],
+            ["rxjs", "npm:7.3.1"],
             ["tslib", "npm:2.1.0"]
           ],
           "linkType": "HARD",
