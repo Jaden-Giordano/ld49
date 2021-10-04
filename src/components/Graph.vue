@@ -78,9 +78,11 @@ export default defineComponent<Props>({
         scopeState.sample = value || 0;
       });
 
-      setInterval(() => {
+      const step = () => {
         render(canvas, scopeState, scopeSize);
-      }, 1000 / frameRate);
+        window.requestAnimationFrame(step);
+      };
+      window.requestAnimationFrame(step);
     });
 
     onUnmounted(() => {

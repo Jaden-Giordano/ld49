@@ -21,8 +21,8 @@
       <div v-if="inputs" class="connectors">
         <div
           v-for="index in inputs"
+          :id="'input-' + id"
           :key="index"
-          ref="inputRef"
           class="connector"
           @click="$emit('input-connect', index)"
         />
@@ -34,8 +34,8 @@
       <div v-if="outputs" class="connectors">
         <div
           v-for="index in outputs"
+          :id="'output-' + id"
           :key="index"
-          ref="outputRef"
           class="connector"
           @click="$emit('output-connect', index)"
         />
@@ -53,6 +53,7 @@
 
 .connector {
   @apply w-4 h-4 box-border border-2 border-gray;
+  @apply cursor-pointer;
 }
 </style>
 
@@ -69,6 +70,7 @@ type Position = {
 
 type Props = {
   title: string;
+  id: string;
   state?: Observable<any>;
   inputs?: number;
   outputs?: number;
@@ -79,6 +81,7 @@ export default defineComponent<Props>({
     Graph,
   },
   props: {
+    id: String,
     title: {
       type: String,
       default: () => 'Widget',

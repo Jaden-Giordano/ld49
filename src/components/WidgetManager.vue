@@ -4,8 +4,8 @@
     <canvas ref="canvas" class="absolute z-10 pointer-events-none" />
     <widget
       v-for="widget in widgets"
+      :id="widget.id"
       :key="widget.id"
-      :ref="(el) => assignRefs(widget.id, el)"
       :title="widget.name"
       :state="widget.state"
       :inputs="widget.inputCount"
@@ -23,12 +23,9 @@ import {
   ComponentPublicInstance,
   computed,
   defineComponent,
-  onBeforeUpdate,
   onMounted,
   reactive,
   ref,
-  toRef,
-  unref,
 } from 'vue';
 import { uniqueId } from 'lodash';
 import {
@@ -43,18 +40,10 @@ import {
 } from 'rxjs';
 
 import WidgetComponent from './Widget.vue';
-import colors from 'windicss/colors';
-
-export type Position = {
-  x: number;
-  y: number;
-};
 
 export interface Connection {
   start: string;
   end: string;
-  startPoint: Position;
-  endPoint: Position;
 }
 
 interface IWidget<T = unknown> {
@@ -111,10 +100,6 @@ type WidgetStore = {
   [key: string]: Widget<any>;
 };
 
-type ConnectionStore = {
-  [key: string]: Connection;
-};
-
 export default defineComponent({
   components: {
     Widget: WidgetComponent,
@@ -133,20 +118,11 @@ export default defineComponent({
       [input.id]: input,
       [output.id]: output,
     });
-    const widgetRefs = ref<Record<string, HTMLDivElement>>({});
-    const inputRefs = ref<Record<string, HTMLDivElement>>({});
-    const outputRefs = ref<Record<string, HTMLDivElement>>({});
     const connectionStore = reactive<Connection[]>([]);
 
     const canvas = ref<HTMLCanvasElement>();
 
     const connecting = ref<string | undefined>();
-
-    const assignRefs = (id: string, el: ComponentPublicInstance) => {
-      if (el) {
-        widgetRefs.value[id] = el.$el;
-      }
-    };
 
     onMounted(() => {
       if (canvas.value) {
@@ -156,13 +132,26 @@ export default defineComponent({
         if (context) {
           const step = () => {
             context.clearRect(0, 0, canvasWidth.value, canvasHeight.value);
-            connectionStore.forEach(({ startPoint, endPoint }) => {
-              context.strokeStyle = 'white';
-              context.lineWidth = 2;
-              context.beginPath();
-              context.moveTo(startPoint.x, startPoint.y);
-              context.lineTo(endPoint.x, endPoint.y);
-              context.stroke();
+            connectionStore.forEach(({ start, end }) => {
+              const startElement = document.getElementById(`output-${start}`);
+              const startParent = startElement?.offsetParent as HTMLDivElement;
+              const endElement = document.getElementById(`input-${end}`);
+              const endParent = endElement?.offsetParent as HTMLDivElement;
+
+              if (startElement && startParent && endElement && endParent) {
+                context.strokeStyle = 'white';
+                context.lineWidth = 2;
+                context.beginPath();
+                context.moveTo(
+                  startParent.offsetLeft + startElement.offsetLeft + 8,
+                  startParent.offsetTop + startElement.offsetTop + 8
+                );
+                context.lineTo(
+                  endParent.offsetLeft + endElement.offsetLeft + 8,
+                  endParent.offsetTop + endElement.offsetTop + 8
+                );
+                context.stroke();
+              }
             });
             window.requestAnimationFrame(step);
           };
@@ -187,14 +176,6 @@ export default defineComponent({
           const connection = {
             start: inputWidget.id,
             end: outputWidget.id,
-            startPoint: reactive({
-              x: toRef(widgetRefs.value[inputWidget.id], 'offsetLeft'),
-              y: toRef(widgetRefs.value[inputWidget.id], 'offsetTop'),
-            }),
-            endPoint: reactive({
-              x: toRef(widgetRefs.value[outputWidget.id], 'offsetLeft'),
-              y: toRef(widgetRefs.value[outputWidget.id], 'offsetTop'),
-            }),
           } as Connection;
 
           connectionStore.push(connection);
@@ -207,18 +188,13 @@ export default defineComponent({
       const widget = new Widget<number>('Invert');
       widget.inputCount = 1;
       widget.outputCount = 1;
-      widget.setModifier(() => pipe(
-        map((value) => -(value || 0)),
-      ));
+      widget.setModifier(() => pipe(map((value) => -(value || 0))));
       widgets.value[widget.id] = widget;
     };
 
     return {
       el,
-      assignRefs,
       widgets,
-      inputRefs,
-      outputRefs,
       canvas,
       handleAdd,
       handleStartConnect,
