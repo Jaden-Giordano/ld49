@@ -7,3 +7,8 @@
   font-family: 'Vector';
   src: url('/fonts/vector.ttf');
 }
+
+.btn {
+  @apply px-2 py-1 box-border;
+  @apply bg-orange-700 text-white;
+}
