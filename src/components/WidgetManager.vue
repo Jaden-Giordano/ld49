@@ -38,6 +38,8 @@ import {
   share,
   map,
   Subscription,
+  OperatorFunction,
+  pipe,
 } from 'rxjs';
 
 import WidgetComponent from './Widget.vue';
@@ -90,6 +92,10 @@ class Widget<T = unknown> implements IWidget<T> {
     }
 
     this.outputs[0] = this.state;
+  }
+
+  setModifier(operator: () => OperatorFunction<T | undefined, T | undefined>) {
+    this.state = this.stateSubject.pipe(operator());
   }
 
   attachInput(state: Observable<T | undefined>) {
@@ -198,8 +204,12 @@ export default defineComponent({
     };
 
     const handleAdd = () => {
-      const widget = new Widget<number>('Random');
+      const widget = new Widget<number>('Invert');
       widget.inputCount = 1;
+      widget.outputCount = 1;
+      widget.setModifier(() => pipe(
+        map((value) => -(value || 0)),
+      ));
       widgets.value[widget.id] = widget;
     };
 
