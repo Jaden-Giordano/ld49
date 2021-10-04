@@ -12,9 +12,6 @@ import { interval, map, Subscription } from 'rxjs';
 import WidgetManager from './components/WidgetManager.vue';
 
 export default defineComponent({
-     props: {
-         input: Observable<any>,
-     },
   components: {
     WidgetManager,
   },
