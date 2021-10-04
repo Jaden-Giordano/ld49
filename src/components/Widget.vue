@@ -27,7 +27,7 @@
         />
       </div>
       <div class="flex-grow flex flex-col p-2">
-        <slot />
+        <graph :input$="state" />
         <span>VALUE: {{ stateRef }}</span>
       </div>
       <div v-if="outputs" class="connectors">
@@ -58,6 +58,7 @@
 import { observableRef } from '@/context';
 import { Observable } from 'rxjs';
 import { computed, defineComponent, ref } from 'vue';
+import Graph from './Graph.vue';
 
 type Position = {
   x: number;
@@ -72,6 +73,9 @@ type Props = {
 };
 
 export default defineComponent<Props>({
+  components: {
+    Graph,
+  },
   props: {
     title: {
       type: String,
