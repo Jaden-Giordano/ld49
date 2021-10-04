@@ -1,10 +1,11 @@
 <template>
-  <div class="w-full h-full relative">
+  <div ref="el" class="w-full h-full relative">
     <button class="absolute right-2 top-2 btn" @click="handleAdd">Add</button>
+    <canvas ref="canvas" class="absolute z-10 pointer-events-none" />
     <widget
       v-for="widget in widgets"
       :key="widget.id"
-      ref="widgetRefs[widget.id]"
+      :ref="(el) => assignRefs(widget.id, el)"
       :title="widget.name"
       :state="widget.state"
       :inputs="widget.inputCount"
@@ -18,7 +19,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref, ref } from 'vue';
+import {
+  ComponentPublicInstance,
+  computed,
+  defineComponent,
+  onBeforeUpdate,
+  onMounted,
+  reactive,
+  ref,
+  toRef,
+  unref,
+} from 'vue';
 import { uniqueId } from 'lodash';
 import {
   BehaviorSubject,
@@ -30,6 +41,19 @@ import {
 } from 'rxjs';
 
 import WidgetComponent from './Widget.vue';
+import colors from 'windicss/colors';
+
+export type Position = {
+  x: number;
+  y: number;
+};
+
+export interface Connection {
+  start: string;
+  end: string;
+  startPoint: Position;
+  endPoint: Position;
+}
 
 interface IWidget<T = unknown> {
   id: string;
@@ -81,11 +105,18 @@ type WidgetStore = {
   [key: string]: Widget<any>;
 };
 
+type ConnectionStore = {
+  [key: string]: Connection;
+};
+
 export default defineComponent({
   components: {
     Widget: WidgetComponent,
   },
   setup() {
+    const el = ref<HTMLDivElement>();
+    const canvasWidth = computed<number>(() => el.value?.clientWidth || 0);
+    const canvasHeight = computed<number>(() => el.value?.clientHeight || 0);
     const input = new Widget('Input', () =>
       interval(500).pipe(map((value) => (value % 2 === 1 ? -1 : 1)))
     );
@@ -96,9 +127,43 @@ export default defineComponent({
       [input.id]: input,
       [output.id]: output,
     });
-    const widgetRefs = ref<{ [key: string]: Ref<HTMLDivElement> }>({});
+    const widgetRefs = ref<Record<string, HTMLDivElement>>({});
+    const inputRefs = ref<Record<string, HTMLDivElement>>({});
+    const outputRefs = ref<Record<string, HTMLDivElement>>({});
+    const connectionStore = reactive<Connection[]>([]);
+
+    const canvas = ref<HTMLCanvasElement>();
 
     const connecting = ref<string | undefined>();
+
+    const assignRefs = (id: string, el: ComponentPublicInstance) => {
+      if (el) {
+        widgetRefs.value[id] = el.$el;
+      }
+    };
+
+    onMounted(() => {
+      if (canvas.value) {
+        canvas.value.width = canvasWidth.value;
+        canvas.value.height = canvasHeight.value;
+        const context = canvas.value.getContext('2d');
+        if (context) {
+          const step = () => {
+            context.clearRect(0, 0, canvasWidth.value, canvasHeight.value);
+            connectionStore.forEach(({ startPoint, endPoint }) => {
+              context.strokeStyle = 'white';
+              context.lineWidth = 2;
+              context.beginPath();
+              context.moveTo(startPoint.x, startPoint.y);
+              context.lineTo(endPoint.x, endPoint.y);
+              context.stroke();
+            });
+            window.requestAnimationFrame(step);
+          };
+          window.requestAnimationFrame(step);
+        }
+      }
+    });
 
     const handleStartConnect = (id: string) => {
       if (!connecting.value) {
@@ -112,6 +177,21 @@ export default defineComponent({
         const outputWidget = widgets.value[id];
         if (inputWidget && outputWidget) {
           outputWidget.attachInput(inputWidget.state);
+
+          const connection = {
+            start: inputWidget.id,
+            end: outputWidget.id,
+            startPoint: reactive({
+              x: toRef(widgetRefs.value[inputWidget.id], 'offsetLeft'),
+              y: toRef(widgetRefs.value[inputWidget.id], 'offsetTop'),
+            }),
+            endPoint: reactive({
+              x: toRef(widgetRefs.value[outputWidget.id], 'offsetLeft'),
+              y: toRef(widgetRefs.value[outputWidget.id], 'offsetTop'),
+            }),
+          } as Connection;
+
+          connectionStore.push(connection);
         }
         connecting.value = undefined;
       }
@@ -124,8 +204,12 @@ export default defineComponent({
     };
 
     return {
+      el,
+      assignRefs,
       widgets,
-      widgetRefs,
+      inputRefs,
+      outputRefs,
+      canvas,
       handleAdd,
       handleStartConnect,
       handleEndConnect,

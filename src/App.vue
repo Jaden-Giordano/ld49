@@ -1,17 +1,6 @@
 <template>
   <div class="w-screen h-screen relative">
-    <!-- <widget-manager /> -->
-    <widget
-      title="Power Source"
-      :outputs="2"
-      @output-connect="handleOutputConnect"
-    >
-      <canvas ref="canvas"></canvas>
-      <span>current value: {{ (wave || 0).toFixed(3) }}</span>
-    </widget>
-    <widget title="Output" :inputs="1" @input-connect="handleInputConnect">
-      <span>current value: 0</span>
-    </widget>
+    <widget-manager />
   </div>
 </template>
 
@@ -19,17 +8,15 @@
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue';
 import colors from 'windicss/colors';
 import { observableRef, bind } from './context';
-import Widget from './components/Widget.vue';
-import { interval, map, Observable, Subscriber, Subscription } from 'rxjs';
-// import WidgetManager from './components/WidgetManager.vue';
+import { interval, map, Subscription } from 'rxjs';
+import WidgetManager from './components/WidgetManager.vue';
 
 export default defineComponent({
      props: {
          input: Observable<any>,
      },
   components: {
-    Widget,
-    // WidgetManager,
+    WidgetManager,
   },
   setup(props) {
     const canvas = ref<HTMLCanvasElement>();
