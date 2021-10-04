@@ -1,49 +1,26 @@
 <template>
-  <div class="w-screen h-screen relative">
-    <!-- <widget-manager /> -->
-    <widget
-      title="Power Source"
-      :outputs="2"
-      @output-connect="handleOutputConnect"
-    >
-      <canvas ref="canvas"></canvas>
-      <span>current value: {{ (wave || 0).toFixed(3) }}</span>
-    </widget>
-    <widget title="Output" :inputs="1" @input-connect="handleInputConnect">
-      <span>current value: 0</span>
-    </widget>
-  </div>
+  <canvas ref="" />
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue';
 import colors from 'windicss/colors';
-import { observableRef, bind } from './context';
+import { observableRef, bind } from '../context';
 import Widget from './components/Widget.vue';
-import { interval, map, Observable, Subscriber, Subscription } from 'rxjs';
-// import WidgetManager from './components/WidgetManager.vue';
+import { interval, map, Subscription } from 'rxjs';
 
 export default defineComponent({
-     props: {
-         input: Observable<any>,
-     },
-  components: {
-    Widget,
-    // WidgetManager,
-  },
-  setup(props) {
+  setup() {
     const canvas = ref<HTMLCanvasElement>();
+    const scopeSize = 30;
     const wave$ = bind(
       interval(25).pipe(
-        //map((index) => index % 2 == 1 ? -1 : 1),
         map((index) => Math.sin(index / 5))
       )
     );
     const wave = observableRef<number>(wave$);
 
     const subscriber = ref<Subscription>();
-
-    const scopeSize = 30;
 
     onMounted(() => {
       let context = canvas.value?.getContext('2d');
@@ -83,16 +60,10 @@ export default defineComponent({
     });
 
     return {
-      wave,
       canvas,
-    };
+      wave,
+    }
+
   },
 });
 </script>
-
-<style>
-#app {
-  @apply bg-gray-900;
-  font-family: Vector, Helvetica, Arial, sans-serif;
-}
-</style>
