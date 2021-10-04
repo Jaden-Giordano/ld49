@@ -22,6 +22,7 @@
         <div
           v-for="index in inputs"
           :key="index"
+          ref="inputRef"
           class="connector"
           @click="$emit('input-connect', index)"
         />
@@ -34,6 +35,7 @@
         <div
           v-for="index in outputs"
           :key="index"
+          ref="outputRef"
           class="connector"
           @click="$emit('output-connect', index)"
         />
