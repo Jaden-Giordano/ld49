@@ -1,21 +1,16 @@
 <template>
   <div class="w-full h-full relative">
-    <button
-      class="absolute right-2 top-2 btn"
-      @click="handleAdd"
-    >
-      Add
-    </button>
+    <button class="absolute right-2 top-2 btn" @click="handleAdd">Add</button>
     <widget
       v-for="widget in widgets"
       :key="widget.id"
+      ref="widgetRefs[widget.id]"
       :title="widget.name"
       :state="widget.state"
       :inputs="widget.inputCount"
       :outputs="widget.outputCount"
       @input-connect="handleEndConnect(widget.id)"
       @output-connect="handleStartConnect(widget.id)"
-      ref="widgetRefs[widget.id]"
     >
       <span>Something</span>
     </widget>
@@ -53,17 +48,19 @@ class Widget<T = unknown> implements IWidget<T> {
   stateSubject: BehaviorSubject<T | undefined>;
   state: Observable<T | undefined>;
   inputs: Subscription[] = [];
-  inputCount: number = 0;
+  inputCount = 0;
   outputs: Observable<T | undefined>[] = [];
-  outputCount: number = 0;
+  outputCount = 0;
 
   constructor(name: string, init?: () => Observable<T>) {
     this.name = name;
     this.stateSubject = new BehaviorSubject<T | undefined>(undefined);
     if (init) {
-      this.state = init().pipe(share({
-        connector: () => this.stateSubject,
-      }));
+      this.state = init().pipe(
+        share({
+          connector: () => this.stateSubject,
+        })
+      );
     } else {
       this.state = this.stateSubject;
     }
@@ -89,8 +86,8 @@ export default defineComponent({
     Widget: WidgetComponent,
   },
   setup() {
-    const input = new Widget('Input', () => interval(500).pipe(
-      map((value) => value % 2 === 1 ? -1 : 1))
+    const input = new Widget('Input', () =>
+      interval(500).pipe(map((value) => (value % 2 === 1 ? -1 : 1)))
     );
     input.outputCount = 1;
     const output = new Widget<number>('Output');
@@ -109,7 +106,7 @@ export default defineComponent({
       }
     };
 
-    const handleEndConnect = (id: string = '') => {
+    const handleEndConnect = (id = '') => {
       if (connecting.value) {
         const inputWidget = widgets.value[connecting.value || ''];
         const outputWidget = widgets.value[id];

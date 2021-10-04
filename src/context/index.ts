@@ -1,4 +1,4 @@
-import { DeepReadonly, onBeforeUnmount, readonly, ref } from "vue";
+import { DeepReadonly, onBeforeUnmount, readonly, ref } from 'vue';
 import { Observable, share } from 'rxjs';
 
 type ReadonlyRef<T = unknown> = {
