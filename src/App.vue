@@ -42,17 +42,15 @@ export default defineComponent({
     onMounted(() => {
       let context = canvas.value?.getContext('2d');
       let samples: number[] = new Array(scopeSize).fill(0);
+
       subscriber.value = wave$.subscribe((value) => {
         let width = canvas.value?.width || 0;
         let height = canvas.value?.height || 0 ;
 
         samples = [...samples.slice(1, scopeSize), value];
 
-
-
         if (context) {
-          context.fillStyle = colors.gray[800];
-          context.fillRect(0, 0, width as number, height as number);
+          context.clearRect(0, 0, width as number, height as number);
           context.strokeStyle = colors.white as string;
           context.lineWidth = 3;
 
